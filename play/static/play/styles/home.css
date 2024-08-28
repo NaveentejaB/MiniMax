@@ -1,0 +1,256 @@
+.container {
+    --video-card-width: 360px;
+    --video-card-height: calc(340/360 * var(--video-card-width));
+}
+
+.banner {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.banner-img-wrapper {
+    height: 40vmin;
+    background-color: #ccc;
+    border-radius: 10px;
+    background-image: url("https://picsum.photos/1500/500?random");
+    background-size: cover;
+    background-position: center;
+}
+
+.banner-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}
+
+.banner .banner-text {
+    position: absolute;
+    bottom: 0;
+    left: 1rem;
+}
+
+.banner-title {
+    font-family: "Oswald", sans-serif;
+    font-size: 3rem;
+    font-weight: 600;
+    letter-spacing: -1.5px;
+    scale: 1 1.2;
+    margin: 1rem 0;
+}
+
+.banner-title, .banner-description {
+    text-shadow: 1px 1px 3px #4444;
+}
+
+.banner-img {
+    border-radius: inherit;
+}
+
+.videos {
+    font-family: Roboto, Arial, Helvetica, sans-serif;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, var(--video-card-width));
+    grid-auto-rows: var(--video-card-height);
+    gap: 0.5vw;
+    row-gap: 1vw;
+    justify-content: center;
+    --on-click-color: rgba(118, 117, 117, 0.318);
+}
+
+.thumbnail {
+    position: relative;
+}
+
+.thumbnail::before {
+    content: attr(data-duration);
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+    background-color: rgba(0, 0, 0, 0.85);
+    color: white;
+    width: -moz-fit-content;
+    width: fit-content;
+    padding: 0.2em 0.35em;
+    border-radius: 10%;
+    font-size: 0.7em;
+}
+
+.thumbnail-img-wrapper {
+    width: 100%;
+    height: 65%;
+    background-color: #aaa;
+    border-radius: 3%;
+}
+
+.thumbnail-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0;
+    border-radius: 3%;
+}
+
+.thumbnail-hover-play-video {
+    display: none;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 3%;
+}
+
+.video-card-bottom-section {
+    display: flex;
+    align-items: flex-start;
+    margin-top: 1rem;
+    gap: .75rem;
+}
+
+.video-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 80%;
+}
+
+.video-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: .5rem;
+    text-decoration: none;
+    color: white;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.channel-name {
+    color: #aaa;
+    margin-bottom: .2rem;
+    font-size: 0.9em;
+}
+
+.channel-name:hover {
+    color: white;
+}
+
+.video-metadata {
+    color: #aaa;
+    font-size: 0.9em;
+}
+
+.channel-icon-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #aaa;
+}
+
+
+/* PAGINATION */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    gap: 1em;
+}
+
+.pagination .step-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1em;
+}
+
+.pagination .page-number {
+    width: 38px;
+    height: 38px;
+    text-decoration: none;
+    color: #ccc;
+    font-size: 1.2rem;
+    font-weight: 600;
+    padding: 0.5rem;
+    border-radius: 50%;
+    background-color: #222222;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pagination a {
+    text-decoration: none;
+    color: black;
+}
+
+.pagination .current-page-number {
+    width: 38px;
+    height: 38px;
+    text-decoration: none;
+    color: black;
+    font-size: 1.2rem;
+    font-weight: 600;
+    padding: 0.5rem;
+    border-radius: 50%;
+    background-color: #d33e2a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pagination .page-number:hover {
+    color: #d33e2a;
+}
+
+
+/* Media Querries */
+/* three columns on small enough display */
+@media screen and (max-width: 1600px) {
+    .videos {
+        grid-template-columns: repeat(3, var(--video-card-width));
+        grid-auto-rows: var(--video-card-height);
+    }
+}
+
+/* two columns on small enough display */
+@media screen and (max-width: 1160px) {
+    .videos {
+        grid-template-columns: repeat(2, var(--video-card-width));
+        grid-auto-rows: var(--video-card-height);
+        gap: 1vw;
+    }
+}
+
+/* smaller video cards to maintain two columns on smaller display */
+@media screen and (max-width: 790px) {
+    .videos {
+        grid-template-columns: repeat(2, calc(0.8*var(--video-card-width)));
+        grid-auto-rows: calc(0.8*var(--video-card-height));
+    }
+}
+
+/* smaller video cards to maintain two columns on smaller display */
+@media screen and (max-width: 614px) {
+    .videos {
+        grid-template-columns: repeat(2, calc(0.7*var(--video-card-width)));
+        grid-auto-rows: calc(0.7*var(--video-card-height));
+        gap: 2vmin;
+    }
+}
+
+/* one column on small enough display */
+@media screen and (max-width: 570px) {
+    .videos {
+        grid-template-columns: repeat(1, calc(var(--video-card-width)));
+        grid-auto-rows: calc(var(--video-card-height));
+        gap: 2vmin;
+    }
+
+    .pagination .prev-page-2, .pagination .next-page-2 {
+        display: none;
+    }
+}

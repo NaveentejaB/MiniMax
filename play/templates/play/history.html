@@ -1,0 +1,71 @@
+{% extends 'play/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}
+    History - PlayTube
+{% endblock %}
+
+{% block html_head %}
+    <link rel="stylesheet" href="{% static 'play/styles/history.css' %}">
+{% endblock %}
+
+
+{% block content %}
+    <div class="container">
+        <div class="my-movies">
+            {% for history in history %}
+                <div class="movie movie-{{ history.video.video_id }}">
+                    <div class="movie-img-container" data-percentage-watched="{{ history.percentage_watched }}">
+                        <a target="_blank" href="{% url 'play:watch' %}?v={{ history.video.video_id }}&ab_channel={{ history.video.channel.channel_id }}">
+                            <img class="movie-img movie-img-{{ history.video.video_id }}" src="https://picsum.photos/500/500?random={{ forloop.counter }}" alt="">
+                            <div class="movie-duration-container">
+                                <div class="movie-duration" data-duration="{{ history.video.duration }}">
+                                    00:00
+                                </div>
+                            </div>
+                            <div class="movie-percentage-watched-indication">
+                            </div>
+                        </a>
+                    </div>
+                    <div class="movie-info-section">
+                        <div class="movie-header">
+                            <div class="movie-icon">
+                                <span class="material-icons">
+                                    movie
+                                </span>
+                            </div>
+                            <a target="_blank" href="{% url 'play:watch' %}?v={{ history.video.video_id }}&ab_channel={{ history.video.channel.channel_id }}">
+                                <div class="movie-name">
+                                {{ history.video.title }}
+                                </div>
+                                <div class="movie-views">
+                                    {% if history.video.release_year == '' %}
+                                        Released: N/A
+                                    {% else %}
+                                        Released: {{ history.video.release_year }}
+                                    {% endif %}
+                                    <div class="movie-desc">
+                                        {{ history.video.description|truncatechars:150 }}
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'play/js/history.js' %}" defer></script>
+    <script>
+        // get the percentage watched data attribute from the movie-img-container and set the width of the movie-img-container::before element to that value
+        const movieImgContainers = document.querySelectorAll('.movie-img-container');
+        movieImgContainers.forEach(movieImgContainer => {
+            const percentageWatched = movieImgContainer.dataset.percentageWatched;
+            movieImgContainer.style.setProperty('--percentage-watched', `${percentageWatched}%`);
+        });
+    </script>
+{% endblock %}

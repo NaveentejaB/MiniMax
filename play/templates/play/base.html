@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Open Graph meta tags for social media sharing -->
+    {% block open_graph %}
+    <meta property="og:title" content="PlayTube - Home" />
+    <meta
+      property="og:description"
+      content="PlayTube is a video sharing platform where users can upload their own videos and watch videos from other users."
+    />
+    <meta
+      property="og:image"
+      content="{{ http_protocol }}://{{ domain_name }}/api/logo"
+    />
+    <meta
+      property="og:url"
+      content="{{ http_protocol }}://{{ domain_name }}{% url 'play:home' %}"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="PlayTube" />
+    <meta property="og:locale" content="en_US" />
+    {% endblock %}
+
+    <!-- Twitter Card meta tags for social media sharing -->
+    {% block twitter_card %}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@atharvnaik" />
+    <meta name="twitter:creator" content="@atharvnaik" />
+    <meta name="twitter:title" content="PlayTube - Home" />
+    <meta
+      name="twitter:description"
+      content="PlayTube is a video sharing platform where users can upload their own videos and watch videos from other users."
+    />
+    <meta
+      name="twitter:image"
+      content="{{ http_protocol }}://{{ domain_name }}/api/logo"
+    />
+    {% endblock %}
+
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="PlayTube is a video sharing platform where users can upload their own videos and watch videos from other users."
+    />
+    <meta
+      name="keywords"
+      content="playtube, video sharing, video platform, youtube, vimeo, dailymotion, video, watch, upload, share"
+    />
+    <meta name="author" content="Atharv Naik" />
+
+    <title>{% block title %}{% endblock %}</title>
+
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <!-- favicon -->
+    <link
+      rel="shortcut icon"
+      href="{{ http_protocol }}://{{ domain_name }}/static/play/images/v2/PlayTube-icon.png"
+      type="image/x-icon"
+    />
+
+    <link rel="stylesheet" href="{% static 'play/styles/base.css' %}" />
+
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
+    />
+
+    <!-- manifest file -->
+    <link rel="manifest" href="{% static 'play/manifest.json' %}" />
+
+    {% block html_head %}{% endblock %} {% block css %}{% endblock %}
+  </head>
+  <body>
+    <div class="main">
+      <!-- navbar -->
+      {% block navbar %} {% include 'play/components/navbar.html' %} {% endblock %}
+      <div class="content">
+        {% include 'play/components/sidebar.html' %}
+
+        {% block content %} {% endblock %}
+      </div>
+    </div>
+    <!-- footer -->
+    {% block footer %} {% endblock %}
+  </body>
+
+  <script src="{% static 'play/js/base.js' %}" defer></script>
+  <script
+    src="https://kit.fontawesome.com/ec5245fd47.js"
+    crossorigin="anonymous"
+  ></script>
+  {% block scripts %}{% endblock %}
+</html>

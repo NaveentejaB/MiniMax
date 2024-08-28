@@ -1,0 +1,187 @@
+{% extends "play/base.html" %}
+{% load custom_filters %}
+{% load static %} 
+{% block title %} {{ movie.title }} {% endblock %} 
+
+{% block open_graph %} 
+<meta property="og:site_name" content="PlayTube" />
+<meta
+  property="og:url"
+  content="{{ http_protocol }}://{{ domain_name }}{{ request.path }}?v={{ video_id }}"
+/>
+<meta property="og:title" content="{{ movie.title }}" />
+<meta
+  property="og:description"
+  content="{{ movie.description|linebreaks|truncatechars:50|safe }}"
+/>
+<meta
+  property="og:image"
+  content="{{ http_protocol }}://{{ domain_name }}/api/get-video-thumbnail/{{ video_id }}"
+/>
+<meta property="og:image:width" content="1920" />
+<meta property="og:image:height" content="1080" />
+<meta property="og:image:alt" content="{{ movie.title }}" />
+<meta property="og:type" content="video.other" />
+{% endblock %} {% block twitter_card %}
+<meta name="twitter:card" content="player" />
+<meta name="twitter:site" content="@playtube" />
+<meta name="twitter:title" content="{{ movie.title }}" />
+<meta
+  name="twitter:description"
+  content="{{ movie.description|linebreaks|truncatechars:50|safe }}"
+/>
+<meta
+  name="twitter:image"
+  content="{{ http_protocol }}://{{ domain_name }}/api/get-video-thumbnail/{{ video_id }}"
+/>
+{% endblock %} {% block css %}
+<link rel="stylesheet" href="{% static 'play/styles/watch.css' %}" />
+<link rel="stylesheet" href="{% static 'play/styles/slider.css' %}" />
+{% endblock %} {% block content %}
+<div class="container">
+  <div class="container-left">
+    {% include 'play/components/player.html' %}
+
+    <div class="video-meta-data-container">
+      <div class="video-title-main">{{ movie.title }}</div>
+      <div class="channel-meta-data-container">
+        <div class="channel-pic-container">
+            <a
+              href="{% url 'play:channel-via-id' channel_id=channel_id %}"
+              class="channel-name"
+              title="{{ video.channel.name }}"
+            >
+              <img
+                src="{{ movie.channel.avatar.url }}"
+                alt="Channel Pic"
+                class="channel-img"
+                width="40px"
+                height="40px"
+              />
+            </a>
+          </div>
+        <div class="pt-uploader-info">
+          <div class="channel-name">
+            <a
+              href="{% url 'play:channel-via-id' channel_id=channel_id %}"
+              class="channel-name"
+              title="{{ video.channel.name }}"
+            >
+              {{ movie.channel.name }}
+            </a>
+          </div>
+          <div class="channel-sub-count">
+            <span>300K subscribers</span>
+          </div>
+        </div>
+        <div class="subscribe">Subscribe</div>
+      </div>
+      <div class="video-desc">
+        <div class="pt-watch-meta-data">
+          <span class="pt-watch-views"
+            >{{ movie.views|format_views }} views
+          </span>
+          <span class="pt-watch-date"
+            >{{ movie.created_at|timesince|truncatetimesince }} ago</span
+          >
+        </div>
+
+        {{ movie.description| linebreaks | urlizetrunc:100 | safe }}
+      </div>
+    </div>
+  </div>
+
+  <div class="container-right"></div>
+</div>
+
+{% endblock %} {% block scripts %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script>
+  const videoSrc = video.src;
+  let video_duration = "{{ movie.duration }}";
+  let video_id = "{{ video_id }}";
+  let channel_id = "{{ channel_id }}";
+  let t = "{{ t }}";
+  const domain_name = "{{ domain_name }}";
+  const http_protocol = "{{ http_protocol }}";
+  const stream_url = "{{ stream_url }}";
+  var hls = new Hls();
+
+  if (Hls.isSupported()) {
+
+    hls.loadSource(videoSrc);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      video.play();
+    });
+  } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    video.src = videoSrc;
+    video.addEventListener("loadedmetadata", () => {
+      video.play();
+    });
+  }
+
+  // start video from the time t
+  if (t !== "0") {
+    video.addEventListener("loadedmetadata", () => {
+      video.currentTime = t;
+    });
+  }
+  // send post request to update watch history
+  function updateWatchTime(currentTime) {
+    $.ajax({
+      type: "POST",
+      url: `${http_protocol}://${domain_name}/api/update-watch-time/`,
+      data: {
+        video_id: video_id,
+        channel_id: channel_id,
+        timestamp: currentTime,
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+      },
+    });
+  }
+
+  // update views
+  function updateViews() {
+    $.ajax({
+      type: "POST",
+      url: `${http_protocol}://${domain_name}/api/update-views/`,
+      data: {
+        video_id: video_id,
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+      },
+    });
+  }
+
+  // update views after video engagement of atleast 10 percent of the video duration
+  // i.e. if the sum of all segments of video.played is greater than 0.1
+  function handleVideoEngagement() {
+    let totalPlayed = 0;
+    for (let i = 0; i < video.played.length; i++) {
+      totalPlayed += video.played.end(i) - video.played.start(i);
+    }
+    if (totalPlayed > 0.1 * video.duration) {
+      console.log(totalPlayed);
+      updateViews();
+      // avoid updating views again
+      video.removeEventListener("timeupdate", handleVideoEngagement);
+    }
+  }
+  video.addEventListener("timeupdate", handleVideoEngagement);
+
+
+  {% if user.is_authenticated %}
+    // update watch history after every 5 seconds; send post request to update watch history
+    let timestamp = 0;
+    setInterval(() => {
+      let currentTime = video.currentTime;
+      if (currentTime !== timestamp) {
+        timestamp = currentTime;
+        updateWatchTime(currentTime);
+      }
+    }, 5000);
+  {% endif %}
+</script>
+<script src="{% static 'play/js/watch.js' %}"></script>
+{% endblock %}

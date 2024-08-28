@@ -1,0 +1,181 @@
+{% extends 'play/base.html' %}
+{% load custom_filters %}
+{% load static %} 
+
+{% block title %}
+    PlayTube - Home
+{% endblock %}
+
+{% block html_head %}
+    <link rel="stylesheet" href="{% static 'play/styles/home.css' %}">
+{% endblock %}
+
+
+{% block content %}
+<div class="banner">
+    <div class="banner-img-wrapper">
+    </div>
+    <div class="banner-text">
+        <h1 class="banner-title" id="playtube">PlayTube</h1>
+        <p class="banner-description">Watch videos from your favorite creators</p>
+    </div>
+</div>
+    <div class="container">
+        <div class="videos">
+            {% for video in videos %}
+            <!-- video card -->
+            <div class="video-card">
+                <a class="thumbnail" href="{% url 'play:watch' %}?v={{ video.video_id }}&ab_channel={{ video.channel.channel_id }}" data-duration="{{ video.duration|get_duration_stamp }}">
+                    <div class="thumbnail-img-wrapper" onmouseenter="playVideo(this, '{{ video.stream_url }}')">
+                        <img src="https://picsum.photos/500/500?random={{ forloop.counter }}" alt="" class="thumbnail-img">
+                        
+                        <video class="thumbnail-hover-play-video" loop muted></video>
+                    </div>
+                </a>
+                <div class="video-card-bottom-section">
+                    <a href="{% url 'play:channel-via-handle' handle=video.channel.handle %}" class="channel-icon" title="{{ video.channel.name }}">
+                        <img src="{{ video.channel.avatar.url }}" alt="" class="channel-icon-img">
+                    </a>
+                    <div class="video-details">
+                        <a href="{% url 'play:watch' %}?v={{ video.video_id }}&ab_channel={{ video.channel.channel_id }}" class="video-title" title="{{ video.title }}">
+                            {{ video.title }}
+                        </a>
+                        <a href="{% url 'play:channel-via-handle' handle=video.channel.handle %}" class="channel-name" title="{{ video.channel.name }}">
+                            {{ video.channel.name }}
+                            {% if video.channel.user.is_staff %}
+                                <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="15px" viewBox="0 0 24 24" width="15px" fill="#ccc"><g><rect fill="none" height="24" width="24"/></g><g><path d="M23,12l-2.44-2.79l0.34-3.69l-3.61-0.82L15.4,1.5L12,2.96L8.6,1.5L6.71,4.69L3.1,5.5L3.44,9.2L1,12l2.44,2.79l-0.34,3.7 l3.61,0.82L8.6,22.5l3.4-1.47l3.4,1.46l1.89-3.19l3.61-0.82l-0.34-3.69L23,12z M10.09,16.72l-3.8-3.81l1.48-1.48l2.32,2.33 l5.85-5.87l1.48,1.48L10.09,16.72z"/></g></svg>
+                            {% endif %}
+                        </a>
+                        <div class="video-metadata">
+                            <span>{{ video.views|format_views }} views</span>
+                            <span>•</span>
+                            <span>{{ video.created_at|timesince|truncatetimesince }} ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- pagination -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if videos.has_previous %}
+                    <a href="?page=1" class="prev-page-numbers page-number">
+                        <span>
+                            &laquo;
+                        </span>
+                    </a>
+                    <a href="?page={{ videos.previous_page_number }}" class="prev-page-numbers page-number">
+                        <span>
+                             &lsaquo;
+                        </span>
+                    </a>
+                {% endif %}
+
+                {% if videos.number|add:"-2" > 0 %}
+                    <a href="?page={{ videos.number|add:'-2' }}" class="prev-page-2 page-number">
+                        <span>
+                            {{ videos.number|add:"-2" }}
+                        </span>
+                    </a>
+                {% endif %}
+
+                {% if videos.number|add:"-1" > 0 %}
+                    <a href="?page={{ videos.number|add:'-1' }}" class="prev-page-1 page-number">
+                        <span>
+                            {{ videos.number|add:"-1" }}
+                        </span>
+                    </a>
+                {% endif %}
+        
+                <span class="current-page-number">
+                    {{ videos.number }}
+                </span>
+
+                {% if videos.number|add:"1" <= videos.paginator.num_pages %}
+                    <a href="?page={{ videos.number|add:'1' }}" class="next-page-1 page-number">
+                        <span>
+                            {{ videos.number|add:"1" }}
+                        </span>
+                    </a>
+                {% endif %}
+
+                {% if videos.number|add:"2" <= videos.paginator.num_pages %}
+                    <a href="?page={{ videos.number|add:'1' }}" class="next-page-2 page-number">
+                        <span>
+                        {{ videos.number|add:"2" }}
+                        </span>
+                    </a>
+                {% endif %}
+        
+                {% if videos.has_next %}
+                    <a href="?page={{ videos.next_page_number }}" class="next-page-numbers page-number">
+                        <span>
+                             &rsaquo; 
+                        </span>
+                    </a>
+                    <a href="?page={{ videos.paginator.num_pages }}" class="next-page-numbers page-number">
+                        <span>
+                            &raquo;
+                        </span>
+                    </a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    {% include 'play/components/footer.html' %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <script>
+        const domain_name = "{{ domain_name }}";
+        const http_protocol = "{{ http_protocol }}";
+
+
+        // show thumbnail only after image is loaded
+        const thumbnails = document.querySelectorAll(".thumbnail-img");
+            thumbnails.forEach((thumbnail) => {
+            thumbnail.addEventListener("load", () => {
+                thumbnail.style.opacity = 1;
+            });
+        });
+
+        // play video on hover
+        function playVideo(container, video_stream_url) {
+            const video = container.querySelector('.thumbnail-hover-play-video');
+            const image = container.querySelector('.thumbnail-img');
+            const source = `${video_stream_url}/playlist.m3u8`;
+        
+            video.style.display = 'block';
+            image.style.display = 'none';
+        
+            const hls = new Hls();
+            hls.loadSource(source);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, function () {
+              video.play();
+            });
+
+            container.addEventListener('mouseleave', () => {
+                stopVideo(container, hls);
+            });
+        }
+        
+        // stop video on hover
+        function stopVideo(container, hls) {
+            const video = container.querySelector('.thumbnail-hover-play-video');
+            const image = container.querySelector('.thumbnail-img');
+
+            hls.destroy();
+
+            video.style.display = 'none';
+            image.style.display = 'block';
+        }
+    </script>
+{% endblock %}
